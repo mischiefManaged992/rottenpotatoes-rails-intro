@@ -11,7 +11,55 @@ class MoviesController < ApplicationController
   end
 
   def index
+    @all_ratings=Movie.all_ratings
+    #redirect flag is used to indicate if a url should be redirected according to session values
+    redirectFlag=0
+    #ordering the list according to the parameters, highlighting the background and storing it in session
+    if params[:order]
+      @orderList=params[:order]
+    else
+      @orderList=session[:order]
+    end
+    #setting redirect flag if param value is not present for ordering movies
+    if (params[:order]==nil && session[:order]!=nil)
+      redirectFlag=1
+    end
+    #updating session according to order parameter
+    if params[:order]!= session[:order]
+      session[:order]=@orderList
+    end
+    if @orderList=="title"
+      @movies=Movie.all.order(@orderList)
+      @highlight_title = "hilite"
+    elsif @orderList=="release_date"
+      @movies=Movie.all.order(@orderList)
+      @highlight_date = "hilite"
+    else
     @movies = Movie.all
+    end
+    #filtering the movies according to the chosen ratings while maintaining the order of movies and storing the current ratings in session
+    if params[:ratings]
+      @ratings=params[:ratings]
+      @movies=@movies.where(rating: @ratings.keys)
+    else
+      if session[:ratings]
+        @ratings=session[:ratings]
+        @movies=@movies.where(rating: @ratings.keys)
+        redirectFlag=1 #setting redirect flag if param value is not present for filtering movies
+      else
+        @ratings=Hash[@all_ratings.collect {|rating| [rating, rating]}] #setting rating to all ratings as initially all boxes should be checked
+        @movies=@movies
+      end
+    end
+    #updating session according to chosen ratings
+    if @ratings != session[:ratings]
+      session[:ratings]=@ratings
+    end
+    #redirecting the url according to the values in the session variable if there is no parameter values
+    if redirectFlag==1
+      flash.keep
+      redirect_to movies_path(order: session[:order],ratings: session[:ratings])
+    end
   end
 
   def new
