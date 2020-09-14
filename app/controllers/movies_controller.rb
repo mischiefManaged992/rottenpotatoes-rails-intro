@@ -11,10 +11,10 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @all_ratings=Movie.all_ratings
+   @all_ratings=Movie.all_ratings
     #redirect flag is used to indicate if a url should be redirected according to session values
     redirectFlag=0
-    #ordering the list according to the parameters, highlighting the background and storing it in session
+    #ordering the list according to the parameters, highlighting the background, and storing it in session
     if params[:order]
       @orderList=params[:order]
     else
